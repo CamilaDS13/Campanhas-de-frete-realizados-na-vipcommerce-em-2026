@@ -218,6 +218,7 @@
             <div class="filter-group">
                 <label for="mesSelect">Selecione o Período</label>
                 <select id="mesSelect" onchange="mudarPeriodo()">
+                    <option value="consolidado" style="font-weight: bold; color: #4f46e5;">✨ Consolidado (Todos os Meses)</option>
                     <option value="2026-01" selected>Janeiro / 2026</option>
                     <option value="2026-02">Fevereiro / 2026</option>
                     <option value="2026-03">Março / 2026</option>
@@ -371,15 +372,56 @@
         atualizarFiltros();
     }
 
+    function obterCampanhasAtivas() {
+        if (periodoAtual === "consolidado") {
+            let mapaConsolidado = {};
+            
+            Object.keys(dadosMeses).forEach(mesKey => {
+                let lista = dadosMeses[mesKey].campanhas || [];
+                lista.forEach(camp => {
+                    let nomeCamp = camp.name.trim().toUpperCase();
+                    if (!mapaConsolidado[nomeCamp]) {
+                        mapaConsolidado[nomeCamp] = {
+                            name: camp.name,
+                            desc: camp.desc,
+                            corPago: camp.corPago,
+                            pedidos: 0,
+                            investimentoNum: 0,
+                            pagoClienteNum: 0,
+                            comprasNum: 0
+                        };
+                    }
+                    mapaConsolidado[nomeCamp].pedidos += Number(camp.pedidos) || 0;
+                    mapaConsolidado[nomeCamp].investimentoNum += converterMoedaParaNumero(camp.investimento);
+                    mapaConsolidado[nomeCamp].pagoClienteNum += converterMoedaParaNumero(camp.pagoCliente);
+                    mapaConsolidado[nomeCamp].comprasNum += converterMoedaParaNumero(camp.compras);
+                });
+            });
+
+            // Converter mapa de volta para array formatado
+            return Object.values(mapaConsolidado).map(c => ({
+                name: c.name,
+                desc: c.desc,
+                corPago: c.corPago,
+                pedidos: c.pedidos,
+                investimento: formatarMoeda(c.investimentoNum),
+                pagoCliente: formatarMoeda(c.pagoClienteNum),
+                compras: c.comprasNum.toFixed(2)
+            }));
+        } else {
+            return JSON.parse(JSON.stringify(dadosMeses[periodoAtual].campanhas || []));
+        }
+    }
+
     function atualizarFiltros() {
         const selectMes = document.getElementById('mesSelect');
         const textoMes = selectMes.options[selectMes.selectedIndex].text;
         const termoBusca = document.getElementById('buscaInput').value.toLowerCase().trim();
 
-        document.getElementById('subtituloHeader').textContent = `Visão detalhada por campanha - ${textoMes}`;
-        document.getElementById('tituloSecao').textContent = `Detalhamento por Campanha (${textoMes})`;
+        document.getElementById('subtituloHeader').textContent = periodoAtual === "consolidado" ? `Visão consolidada de todas as campanhas` : `Visão detalhada por campanha - ${textoMes}`;
+        document.getElementById('tituloSecao').textContent = periodoAtual === "consolidado" ? `Detalhamento Consolidado (Geral)` : `Detalhamento por Campanha (${textoMes})`;
 
-        let campanhasAtivas = dadosMeses[periodoAtual].campanhas || [];
+        let campanhasAtivas = obterCampanhasAtivas();
 
         let campanhasFiltradas = campanhasAtivas;
         if (termoBusca !== "") {
@@ -459,7 +501,7 @@
         csvContent += `Quantidade de Campanhas: ${qtdCampanhas}\n\n`;
         csvContent += "Campanha;Qtd Pedidos;Investimento;Valor Pago pelo Cliente;Valor em Compras\n";
 
-        let campanhasAtivas = dadosMeses[periodoAtual].campanhas;
+        let campanhasAtivas = obterCampanhasAtivas();
         campanhasAtivas.forEach(camp => {
             csvContent += `"${camp.name}";"${camp.pedidos}";"${camp.investimento || 'R$ 0,00'}";"${camp.pagoCliente || 'R$ 0,00'}";"${formatarMoeda(converterMoedaParaNumero(camp.compras))}"\n`;
         });
