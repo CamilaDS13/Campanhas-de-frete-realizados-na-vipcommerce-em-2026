@@ -210,7 +210,7 @@
 <div class="container">
     <header>
         <h1>Painel de Acompanhamento de Frete</h1>
-        <p id="subtituloHeader">Visão detalhada por campanha - Janeiro / 2026</p>
+        <p id="subtituloHeader">Visão detalhada por campanha - Consolidado (Todos os Meses)</p>
     </header>
 
     <div class="filters-card">
@@ -218,8 +218,8 @@
             <div class="filter-group">
                 <label for="mesSelect">Selecione o Período</label>
                 <select id="mesSelect" onchange="mudarPeriodo()">
-                    <option value="consolidado" style="font-weight: bold; color: #4f46e5;">✨ Consolidado (Todos os Meses)</option>
-                    <option value="2026-01" selected>Janeiro / 2026</option>
+                    <option value="consolidado" selected>Consolidado (Todos os Meses)</option>
+                    <option value="2026-01">Janeiro / 2026</option>
                     <option value="2026-02">Fevereiro / 2026</option>
                     <option value="2026-03">Março / 2026</option>
                     <option value="2026-04">Abril / 2026</option>
@@ -256,7 +256,7 @@
         </div>
     </div>
 
-    <div class="section-title" id="tituloSecao">Detalhamento por Campanha (Janeiro / 2026)</div>
+    <div class="section-title" id="tituloSecao">Detalhamento por Campanha (Consolidado)</div>
     <div class="campaigns-grid" id="campaignsContainer"></div>
 
     <div class="action-bar">
@@ -338,10 +338,10 @@
         "2026-07": {
             titulo: "Julho / 2026",
             campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 224, investimento: "R$ 2.298,00", pagoCliente: "R$ 0,00", compras: "0.00" },
-                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 664, investimento: "R$ 6.652,00", pagoCliente: "R$ 3.313,36", compras: "0.00" },
-                { name: "FRETE CLIENTE 60+", pedidos: 166, investimento: "R$ 1.710,00", pagoCliente: "R$ 828,34", compras: "0.00" },
-                { name: "FRETE OFERTAO DO BOM", pedidos: 138, investimento: "R$ 1.386,00", pagoCliente: "R$ 688,62", compras: "0.00" }
+                { name: "FRETE GRATIS 1 COMPRA", pedidos: 224, investimento: "R$ 2.298,00", pagoCliente: "R$ 0,00", compras: "64085.70" },
+                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 664, investimento: "R$ 6.652,00", pagoCliente: "R$ 3.313,36", compras: "192870.62" },
+                { name: "FRETE CLIENTE 60+", pedidos: 166, investimento: "R$ 1.710,00", pagoCliente: "R$ 828,34", compras: "47129.75" },
+                { name: "FRETE OFERTAO DO BOM", pedidos: 138, investimento: "R$ 1.386,00", pagoCliente: "R$ 688,62", compras: "63776.89" }
             ]
         },
         "2026-08": {
@@ -350,7 +350,7 @@
         }
     };
 
-    let periodoAtual = "2026-01";
+    let periodoAtual = "consolidado";
 
     function formatarMoeda(valor) {
         return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -366,22 +366,16 @@
         return isNaN(num) ? 0 : num;
     }
 
-    function mudarPeriodo() {
-        const selectMes = document.getElementById('mesSelect');
-        periodoAtual = selectMes.value;
-        atualizarFiltros();
-    }
-
     function obterCampanhasAtivas() {
         if (periodoAtual === "consolidado") {
-            let mapaConsolidado = {};
-            
+            let mapaCampanhas = {};
+
             Object.keys(dadosMeses).forEach(mesKey => {
                 let lista = dadosMeses[mesKey].campanhas || [];
                 lista.forEach(camp => {
-                    let nomeCamp = camp.name.trim().toUpperCase();
-                    if (!mapaConsolidado[nomeCamp]) {
-                        mapaConsolidado[nomeCamp] = {
+                    let nomeKey = camp.name.trim().toUpperCase();
+                    if (!mapaCampanhas[nomeKey]) {
+                        mapaCampanhas[nomeKey] = {
                             name: camp.name,
                             desc: camp.desc,
                             corPago: camp.corPago,
@@ -391,26 +385,37 @@
                             comprasNum: 0
                         };
                     }
-                    mapaConsolidado[nomeCamp].pedidos += Number(camp.pedidos) || 0;
-                    mapaConsolidado[nomeCamp].investimentoNum += converterMoedaParaNumero(camp.investimento);
-                    mapaConsolidado[nomeCamp].pagoClienteNum += converterMoedaParaNumero(camp.pagoCliente);
-                    mapaConsolidado[nomeCamp].comprasNum += converterMoedaParaNumero(camp.compras);
+                    mapaCampanhas[nomeKey].pedidos += Number(camp.pedidos) || 0;
+                    mapaCampanhas[nomeKey].investimentoNum += converterMoedaParaNumero(camp.investimento);
+                    mapaCampanhas[nomeKey].pagoClienteNum += converterMoedaParaNumero(camp.pagoCliente);
+                    mapaCampanhas[nomeKey].comprasNum += converterMoedaParaNumero(camp.compras);
                 });
             });
 
-            // Converter mapa de volta para array formatado
-            return Object.values(mapaConsolidado).map(c => ({
-                name: c.name,
-                desc: c.desc,
-                corPago: c.corPago,
-                pedidos: c.pedidos,
-                investimento: formatarMoeda(c.investimentoNum),
-                pagoCliente: formatarMoeda(c.pagoClienteNum),
-                compras: c.comprasNum.toFixed(2)
-            }));
+            let resultado = [];
+            Object.keys(mapaCampanhas).forEach(k => {
+                let c = mapaCampanhas[k];
+                let baseInfo = campanhasBase.find(b => b.name.toUpperCase() === k) || {};
+                resultado.push({
+                    name: c.name,
+                    desc: c.desc || baseInfo.desc || 'Campanha de Frete',
+                    corPago: c.corPago || baseInfo.corPago || '#047857',
+                    pedidos: c.pedidos,
+                    investimento: formatarMoeda(c.investimentoNum),
+                    pagoCliente: formatarMoeda(c.pagoClienteNum),
+                    compras: c.comprasNum.toFixed(2)
+                });
+            });
+            return resultado;
         } else {
-            return JSON.parse(JSON.stringify(dadosMeses[periodoAtual].campanhas || []));
+            return dadosMeses[periodoAtual].campanhas || [];
         }
+    }
+
+    function mudarPeriodo() {
+        const selectMes = document.getElementById('mesSelect');
+        periodoAtual = selectMes.value;
+        atualizarFiltros();
     }
 
     function atualizarFiltros() {
@@ -418,8 +423,8 @@
         const textoMes = selectMes.options[selectMes.selectedIndex].text;
         const termoBusca = document.getElementById('buscaInput').value.toLowerCase().trim();
 
-        document.getElementById('subtituloHeader').textContent = periodoAtual === "consolidado" ? `Visão consolidada de todas as campanhas` : `Visão detalhada por campanha - ${textoMes}`;
-        document.getElementById('tituloSecao').textContent = periodoAtual === "consolidado" ? `Detalhamento Consolidado (Geral)` : `Detalhamento por Campanha (${textoMes})`;
+        document.getElementById('subtituloHeader').textContent = `Visão detalhada por campanha - ${textoMes}`;
+        document.getElementById('tituloSecao').textContent = `Detalhamento por Campanha (${textoMes})`;
 
         let campanhasAtivas = obterCampanhasAtivas();
 
