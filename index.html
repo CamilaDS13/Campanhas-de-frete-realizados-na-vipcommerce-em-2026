@@ -100,20 +100,20 @@
             box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
             margin-bottom: 24px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
             gap: 20px;
             align-items: center;
         }
 
         .general-item div:first-child {
-            font-size: 13px;
+            font-size: 12px;
             opacity: 0.9;
             margin-bottom: 4px;
             font-weight: 500;
         }
 
         .general-item div:last-child {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
         }
 
@@ -253,6 +253,10 @@
         <div class="general-item">
             <div>VALOR TOTAL EM COMPRAS</div>
             <div id="geralCompras">R$ 0,00</div>
+        </div>
+        <div class="general-item">
+            <div>INVESTIMENTO GERAL EM %</div>
+            <div id="geralInvestimentoPercent">0,00%</div>
         </div>
     </div>
 
@@ -455,10 +459,17 @@
             totalComprasNum += converterMoedaParaNumero(camp.compras);
         });
 
+        // Cálculo da Porcentagem Geral do Painel Azul
+        let percentualGeral = 0;
+        if (totalComprasNum > 0) {
+            percentualGeral = (totalInvestimentoNum / totalComprasNum) * 100;
+        }
+
         document.getElementById('geralQtdCampanhas').textContent = campanhasAtivas.length;
         document.getElementById('geralPedidos').textContent = totalPedidos;
         document.getElementById('geralInvestimento').textContent = formatarMoeda(totalInvestimentoNum);
         document.getElementById('geralCompras').textContent = formatarMoeda(totalComprasNum);
+        document.getElementById('geralInvestimentoPercent').textContent = percentualGeral.toFixed(2) + '%';
 
         const container = document.getElementById('campaignsContainer');
         container.innerHTML = "";
@@ -472,7 +483,7 @@
             const valorInvestimentoNum = converterMoedaParaNumero(camp.investimento);
             const valorComprasNum = converterMoedaParaNumero(camp.compras);
             
-            // Cálculo do Investimento em % (Apenas nos meses, no consolidado fica oculto)
+            // Cálculo do Investimento em % individual (Apenas nos meses)
             let percentualInvestimentoHtml = "";
             if (periodoAtual !== "consolidado" && valorComprasNum > 0) {
                 const percentual = (valorInvestimentoNum / valorComprasNum) * 100;
@@ -521,10 +532,11 @@
         const totalPedidos = document.getElementById('geralPedidos').textContent;
         const totalInvestimento = document.getElementById('geralInvestimento').textContent;
         const totalCompras = document.getElementById('geralCompras').textContent;
+        const totalPercent = document.getElementById('geralInvestimentoPercent').textContent;
 
         let csvContent = "\uFEFF"; 
         csvContent += `Relatório de Campanhas de Frete - ${mes}\n`;
-        csvContent += `Quantidade de Campanhas: ${qtdCampanhas}\n\n`;
+        csvContent += `Quantidade de Campanhas: ${qtdCampanhas} | Investimento Geral em %: ${totalPercent}\n\n`;
         csvContent += "Campanha;Qtd Pedidos;Investimento;Valor Pago pelo Cliente;Valor em Compras\n";
 
         let campanhasAtivas = obterCampanhasAtivas();
