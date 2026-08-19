@@ -137,12 +137,12 @@
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1.2fr 1.5fr;
+            grid-template-columns: 1.8fr 0.9fr 1fr 1fr 1fr 1.2fr;
             gap: 16px;
             align-items: center;
         }
 
-        @media (max-width: 1000px) {
+        @media (max-width: 1100px) {
             .campaign-row-card {
                 grid-template-columns: 1fr;
                 gap: 12px;
@@ -169,7 +169,7 @@
         }
 
         .metric-box div:last-child {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--text-color);
         }
@@ -469,7 +469,22 @@
         }
 
         campanhasFiltradas.forEach(camp => {
-            const valorComprasFormatado = formatarMoeda(converterMoedaParaNumero(camp.compras));
+            const valorInvestimentoNum = converterMoedaParaNumero(camp.investimento);
+            const valorComprasNum = converterMoedaParaNumero(camp.compras);
+            
+            // Cálculo do Investimento em % (Apenas nos meses, no consolidado fica oculto)
+            let percentualInvestimentoHtml = "";
+            if (periodoAtual !== "consolidado" && valorComprasNum > 0) {
+                const percentual = (valorInvestimentoNum / valorComprasNum) * 100;
+                percentualInvestimentoHtml = `
+                    <div class="metric-box">
+                        <div>INVESTIMENTO EM %</div>
+                        <div style="color: var(--primary-color);">${percentual.toFixed(2)}%</div>
+                    </div>
+                `;
+            }
+
+            const valorComprasFormatado = formatarMoeda(valorComprasNum);
             const card = document.createElement('div');
             card.className = "campaign-row-card";
             card.innerHTML = `
@@ -491,8 +506,9 @@
                 </div>
                 <div class="metric-box">
                     <div>VALOR EM COMPRAS</div>
-                    <div style="color: #065f46; font-size: 16px;">${valorComprasFormatado}</div>
+                    <div style="color: #065f46;">${valorComprasFormatado}</div>
                 </div>
+                ${percentualInvestimentoHtml}
             `;
             container.appendChild(card);
         });
