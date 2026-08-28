@@ -88,10 +88,6 @@
             background: white;
         }
 
-        .filter-group select:focus, .filter-group input:focus {
-            border-color: var(--primary-color);
-        }
-
         .general-summary {
             background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
             color: white;
@@ -174,34 +170,17 @@
             color: var(--text-color);
         }
 
-        .action-bar {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn {
-            background-color: var(--primary-color);
+        .btn-excel {
+            background-color: #059669;
             color: white;
             border: none;
             padding: 10px 20px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .btn-excel {
-            background-color: #059669;
-        }
-
-        .btn:hover {
-            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
     </style>
 </head>
@@ -234,7 +213,7 @@
                 <input type="text" id="buscaInput" placeholder="Ex: oferta, 60+, primeira..." oninput="atualizarFiltros()">
             </div>
         </div>
-        <button class="btn btn-excel" onclick="exportarExcel()">📊 Exportar Relatório para Excel (CSV)</button>
+        <button class="btn-excel" onclick="exportarExcel()">📊 Exportar Relatório para Excel (CSV)</button>
     </div>
 
     <div class="general-summary">
@@ -262,10 +241,6 @@
 
     <div class="section-title" id="tituloSecao">Detalhamento por Campanha (Consolidado)</div>
     <div class="campaigns-grid" id="campaignsContainer"></div>
-
-    <div class="action-bar">
-        <button class="btn" onclick="salvarDados()">Salvar Alterações</button>
-    </div>
 </div>
 
 <script>
@@ -283,78 +258,57 @@
     ];
 
     const dadosMeses = {
-        "2026-01": {
-            titulo: "Janeiro / 2026",
+        "2026-01": { titulo: "Janeiro / 2026", campanhas: [
+            { name: "FRETE GRATIS 1 COMPRA", pedidos: 187, investimento: "R$ 1.985,50", pagoCliente: "R$ 0,00", compras: "51743.64" },
+            { name: "FRETE OFERTAO DO BOM", pedidos: 126, investimento: "R$ 1.026,26", pagoCliente: "R$ 491,56", compras: "53666.71" },
+            { name: "FRETE CLIENTE 60+", pedidos: 164, investimento: "R$ 1.309,30", pagoCliente: "R$ 326,36", compras: "41559.60" },
+            { name: "FRETE ANIVERSARIANTES", pedidos: 80, investimento: "R$ 660,48", pagoCliente: "R$ 487,22", compras: "21052.73" }
+        ]},
+        "2026-02": { titulo: "Fevereiro / 2026", campanhas: [
+            { name: "FRETE GRATIS 1 COMPRA", pedidos: 139, investimento: "R$ 1.317,00", pagoCliente: "R$ 0,00", compras: "31774.50" },
+            { name: "FRETE CLIENTE 60+", pedidos: 155, investimento: "R$ 1.152,48", pagoCliente: "R$ 308,45", compras: "43798.10" },
+            { name: "FRETE OFERTAO DO BOM", pedidos: 118, investimento: "R$ 845,02", pagoCliente: "R$ 470,82", compras: "50104.80" },
+            { name: "FRETE CARNAVAL", pedidos: 182, investimento: "R$ 1.049,46", pagoCliente: "R$ 362,18", compras: "47424.43" }
+        ]},
+        "2026-03": { titulo: "Março / 2026", campanhas: [
+            { name: "FRETE GRATIS 1 COMPRA", pedidos: 142, investimento: "R$ 1.441,00", pagoCliente: "R$ 0,00", compras: "35253.18" },
+            { name: "FRETE OFERTAO DO BOM", pedidos: 136, investimento: "R$ 583,12", pagoCliente: "R$ 542,64", compras: "65435.27" },
+            { name: "FRETE CLIENTE 60+", pedidos: 550, investimento: "R$ 3.995,10", pagoCliente: "R$ 1.094,50", compras: "144980.42" },
+            { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 52, investimento: "R$ 291,64", pagoCliente: "R$ 207,48", compras: "14320.42" }
+        ]},
+        "2026-04": { titulo: "Abril / 2026", campanhas: [
+            { name: "FRETE GRATIS 1 COMPRA", pedidos: 148, investimento: "R$ 1.441,00", pagoCliente: "R$ 0,00", compras: "33925.86" },
+            { name: "FRETE CLIENTE 60+", pedidos: 915, investimento: "R$ 7.787,58", pagoCliente: "R$ 2.630,91", compras: "243134.84" },
+            { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 635, investimento: "R$ 6.360,00", pagoCliente: "R$ 2.533,65", compras: "177557.40" },
+            { name: "FRETE PASCOA", pedidos: 134, investimento: "R$ 1.359,00", pagoCliente: "R$ 400,66", compras: "60468.82" },
+            { name: "FRETE ANIVERSARIO DE FORTALEZA", pedidos: 16, investimento: "R$ 181,00", pagoCliente: "R$ 47,84", compras: "5499.74" }
+        ]},
+        "2026-05": { titulo: "Maio / 2026", campanhas: [
+            { name: "FRETE GRATIS 1 COMPRA", pedidos: 158, investimento: "R$ 1.597,00", pagoCliente: "R$ 0,00", compras: "37810.89" },
+            { name: "FRETE CLIENTE 60+", pedidos: 951, investimento: "R$ 7.641,13", pagoCliente: "R$ 2.690,04", compras: "250688.54" },
+            { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 1025, investimento: "R$ 10.335,00", pagoCliente: "R$ 4.089,75", compras: "280325.71" },
+            { name: "FRETE POR R$1,99", pedidos: 84, investimento: "R$ 674,93", pagoCliente: "R$ 237,61", compras: "39248.02" }
+        ]},
+        "2026-06": { titulo: "Junho / 2026", campanhas: [
+            { name: "FRETE GRATIS 1 COMPRA", pedidos: 152, investimento: "R$ 1.597,00", pagoCliente: "R$ 0,00", compras: "34604.88" },
+            { name: "FRETE CLIENTE 60+", pedidos: 105, investimento: "R$ 1.164,00", pagoCliente: "R$ 313,95", compras: "270909.01" },
+            { name: "FRETE OFERTAO DO BOM", pedidos: 138, investimento: "R$ 1.386,00", pagoCliente: "R$ 688,62", compras: "46957.82" },
+            { name: "FRETE ESPECIAL DO DIA 6/6", pedidos: 23, investimento: "R$ 253,00", pagoCliente: "R$ 0,00", compras: "6892.90" },
+            { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 36, investimento: "R$ 342,00", pagoCliente: "R$ 179,64", compras: "11761.07" }
+        ]},
+        "2026-07": { titulo: "Julho / 2026", campanhas: [
+            { name: "FRETE GRATIS 1 COMPRA", pedidos: 224, investimento: "R$ 2.298,00", pagoCliente: "R$ 0,00", compras: "64085.70" },
+            { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 664, investimento: "R$ 6.652,00", pagoCliente: "R$ 3.313,36", compras: "192870.62" },
+            { name: "FRETE CLIENTE 60+", pedidos: 166, investimento: "R$ 1.710,00", pagoCliente: "R$ 828,34", compras: "47129.75" },
+            { name: "FRETE OFERTAO DO BOM", pedidos: 138, investimento: "R$ 1.386,00", pagoCliente: "R$ 688,62", compras: "63776.89" }
+        ]},
+        "2026-08": { 
+            titulo: "Agosto / 2026", 
             campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 187, investimento: "R$ 1.985,50", pagoCliente: "R$ 0,00", compras: "51743.64" },
-                { name: "FRETE OFERTAO DO BOM", pedidos: 126, investimento: "R$ 1.026,26", pagoCliente: "R$ 491,56", compras: "53666.71" },
-                { name: "FRETE CLIENTE 60+", pedidos: 164, investimento: "R$ 1.309,30", pagoCliente: "R$ 326,36", compras: "41559.60" },
-                { name: "FRETE ANIVERSARIANTES", pedidos: 80, investimento: "R$ 660,48", pagoCliente: "R$ 487,22", compras: "21052.73" }
-            ]
-        },
-        "2026-02": {
-            titulo: "Fevereiro / 2026",
-            campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 139, investimento: "R$ 1.317,00", pagoCliente: "R$ 0,00", compras: "31774.50" },
-                { name: "FRETE CLIENTE 60+", pedidos: 155, investimento: "R$ 1.152,48", pagoCliente: "R$ 308,45", compras: "43798.10" },
-                { name: "FRETE OFERTAO DO BOM", pedidos: 118, investimento: "R$ 845,02", pagoCliente: "R$ 470,82", compras: "50104.80" },
-                { name: "FRETE CARNAVAL", pedidos: 182, investimento: "R$ 1.049,46", pagoCliente: "R$ 362,18", compras: "47424.43" }
-            ]
-        },
-        "2026-03": {
-            titulo: "Março / 2026",
-            campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 142, investimento: "R$ 1.441,00", pagoCliente: "R$ 0,00", compras: "35253.18" },
-                { name: "FRETE OFERTAO DO BOM", pedidos: 136, investimento: "R$ 583,12", pagoCliente: "R$ 542,64", compras: "65435.27" },
-                { name: "FRETE CLIENTE 60+", pedidos: 550, investimento: "R$ 3.995,10", pagoCliente: "R$ 1.094,50", compras: "144980.42" },
-                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 52, investimento: "R$ 291,64", pagoCliente: "R$ 207,48", compras: "14320.42" }
-            ]
-        },
-        "2026-04": {
-            titulo: "Abril / 2026",
-            campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 148, investimento: "R$ 1.441,00", pagoCliente: "R$ 0,00", compras: "33925.86" },
-                { name: "FRETE CLIENTE 60+", pedidos: 915, investimento: "R$ 7.787,58", pagoCliente: "R$ 2.630,91", compras: "243134.84" },
-                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 635, investimento: "R$ 6.360,00", pagoCliente: "R$ 2.533,65", compras: "177557.40" },
-                { name: "FRETE PASCOA", pedidos: 134, investimento: "R$ 1.359,00", pagoCliente: "R$ 400,66", compras: "60468.82" },
-                { name: "FRETE ANIVERSARIO DE FORTALEZA", pedidos: 16, investimento: "R$ 181,00", pagoCliente: "R$ 47,84", compras: "5499.74" }
-            ]
-        },
-        "2026-05": {
-            titulo: "Maio / 2026",
-            campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 158, investimento: "R$ 1.597,00", pagoCliente: "R$ 0,00", compras: "37810.89" },
-                { name: "FRETE CLIENTE 60+", pedidos: 951, investimento: "R$ 7.641,13", pagoCliente: "R$ 2.690,04", compras: "250688.54" },
-                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 1025, investimento: "R$ 10.335,00", pagoCliente: "R$ 4.089,75", compras: "280325.71" },
-                { name: "FRETE POR R$1,99", pedidos: 84, investimento: "R$ 674,93", pagoCliente: "R$ 237,61", compras: "39248.02" }
-            ]
-        },
-        "2026-06": {
-            titulo: "Junho / 2026",
-            campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 152, investimento: "R$ 1.597,00", pagoCliente: "R$ 0,00", compras: "34604.88" },
-                { name: "FRETE CLIENTE 60+", pedidos: 105, investimento: "R$ 1.164,00", pagoCliente: "R$ 313,95", compras: "270909.01" },
-                { name: "FRETE OFERTAO DO BOM", pedidos: 138, investimento: "R$ 1.386,00", pagoCliente: "R$ 688,62", compras: "46957.82" },
-                { name: "FRETE ESPECIAL DO DIA 6/6", pedidos: 23, investimento: "R$ 253,00", pagoCliente: "R$ 0,00", compras: "6892.90" },
-                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 36, investimento: "R$ 342,00", pagoCliente: "R$ 179,64", compras: "11761.07" }
-            ]
-        },
-        "2026-07": {
-            titulo: "Julho / 2026",
-            campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 224, investimento: "R$ 2.298,00", pagoCliente: "R$ 0,00", compras: "64085.70" },
-                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 664, investimento: "R$ 6.652,00", pagoCliente: "R$ 3.313,36", compras: "192870.62" },
-                { name: "FRETE CLIENTE 60+", pedidos: 166, investimento: "R$ 1.710,00", pagoCliente: "R$ 828,34", compras: "47129.75" },
-                { name: "FRETE OFERTAO DO BOM", pedidos: 138, investimento: "R$ 1.386,00", pagoCliente: "R$ 688,62", compras: "63776.89" }
-            ]
-        },
-        "2026-08": {
-            titulo: "Agosto / 2026",
-            campanhas: [
-                { name: "FRETE GRATIS 1 COMPRA", pedidos: 133, investimento: "R$ 1.317,00", pagoCliente: "R$ 0,00", compras: "26426.70" },
-                { name: "FRETE OFERTAO DO BOM", pedidos: 133, investimento: "R$ 1.336,00", pagoCliente: "R$ 660,00", compras: "57972.48" },
-                { name: "FRETE CLIENTE 60+", pedidos: 76, investimento: "R$ 783,00", pagoCliente: "R$ 380,00", compras: "21478.29" },
-                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 483, investimento: "R$ 4.830,00", pagoCliente: "R$ 2.415,00", compras: "142573.56" }
+                { name: "FRETE GRATIS 1 COMPRA", pedidos: 217, investimento: "R$ 2.247,00", pagoCliente: "R$ 0,00", compras: "44958.82" },
+                { name: "FRETE OFERTAO DO BOM", pedidos: 133, investimento: "R$ 657,33", pagoCliente: "R$ 623,95", compras: "61123.88" },
+                { name: "FRETE CLIENTE 60+", pedidos: 76, investimento: "R$ 414,76", pagoCliente: "R$ 376,66", compras: "22212.95" },
+                { name: "FRETE CLIENTE COM +3 COMPRAS", pedidos: 485, investimento: "R$ 2.675,85", pagoCliente: "R$ 2.675,85", compras: "149656.12" }
             ]
         }
     };
@@ -378,21 +332,12 @@
     function obterCampanhasAtivas() {
         if (periodoAtual === "consolidado") {
             let mapaCampanhas = {};
-
             Object.keys(dadosMeses).forEach(mesKey => {
                 let lista = dadosMeses[mesKey].campanhas || [];
                 lista.forEach(camp => {
                     let nomeKey = camp.name.trim().toUpperCase();
                     if (!mapaCampanhas[nomeKey]) {
-                        mapaCampanhas[nomeKey] = {
-                            name: camp.name,
-                            desc: camp.desc,
-                            corPago: camp.corPago,
-                            pedidos: 0,
-                            investimentoNum: 0,
-                            pagoClienteNum: 0,
-                            comprasNum: 0
-                        };
+                        mapaCampanhas[nomeKey] = { name: camp.name, pedidos: 0, investimentoNum: 0, pagoClienteNum: 0, comprasNum: 0 };
                     }
                     mapaCampanhas[nomeKey].pedidos += Number(camp.pedidos) || 0;
                     mapaCampanhas[nomeKey].investimentoNum += converterMoedaParaNumero(camp.investimento);
@@ -401,29 +346,29 @@
                 });
             });
 
-            let resultado = [];
-            Object.keys(mapaCampanhas).forEach(k => {
+            return Object.keys(mapaCampanhas).map(k => {
                 let c = mapaCampanhas[k];
                 let baseInfo = campanhasBase.find(b => b.name.toUpperCase() === k) || {};
-                resultado.push({
+                return {
                     name: c.name,
-                    desc: c.desc || baseInfo.desc || 'Campanha de Frete',
-                    corPago: c.corPago || baseInfo.corPago || '#047857',
+                    desc: baseInfo.desc || 'Campanha de Frete',
+                    corPago: baseInfo.corPago || '#047857',
                     pedidos: c.pedidos,
                     investimento: formatarMoeda(c.investimentoNum),
                     pagoCliente: formatarMoeda(c.pagoClienteNum),
                     compras: c.comprasNum.toFixed(2)
-                });
+                };
             });
-            return resultado;
         } else {
-            return dadosMeses[periodoAtual].campanhas || [];
+            return dadosMeses[periodoAtual].campanhas.map(camp => {
+                let baseInfo = campanhasBase.find(b => b.name.toUpperCase() === camp.name.trim().toUpperCase()) || {};
+                return { ...camp, desc: baseInfo.desc, corPago: baseInfo.corPago };
+            });
         }
     }
 
     function mudarPeriodo() {
-        const selectMes = document.getElementById('mesSelect');
-        periodoAtual = selectMes.value;
+        periodoAtual = document.getElementById('mesSelect').value;
         atualizarFiltros();
     }
 
@@ -436,37 +381,19 @@
         document.getElementById('tituloSecao').textContent = `Detalhamento por Campanha (${textoMes})`;
 
         let campanhasAtivas = obterCampanhasAtivas();
+        let campanhasFiltradas = termoBusca === "" ? campanhasAtivas : campanhasAtivas.filter(camp => camp.name.toLowerCase().includes(termoBusca));
 
-        let campanhasFiltradas = campanhasAtivas;
-        if (termoBusca !== "") {
-            campanhasFiltradas = campanhasFiltradas.filter(camp => 
-                camp.name.toLowerCase().includes(termoBusca) || 
-                camp.desc.toLowerCase().includes(termoBusca)
-            );
-        }
-
-        let totalPedidos = 0;
-        let totalInvestimentoNum = 0;
-        let totalComprasNum = 0;
-
+        let totalPedidos = 0, totalInvestimentoNum = 0, totalComprasNum = 0;
         campanhasAtivas.forEach(camp => {
-            let baseInfo = campanhasBase.find(b => b.name.toUpperCase() === camp.name.trim().toUpperCase()) || {};
-            camp.desc = camp.desc || baseInfo.desc || 'Campanha de Frete';
-            camp.corPago = camp.corPago || baseInfo.corPago || '#047857';
-
             totalPedidos += Number(camp.pedidos) || 0;
             totalInvestimentoNum += converterMoedaParaNumero(camp.investimento);
             totalComprasNum += converterMoedaParaNumero(camp.compras);
         });
 
-        // Cálculo da Porcentagem Geral do Painel Azul
-        let percentualGeral = 0;
-        if (totalComprasNum > 0) {
-            percentualGeral = (totalInvestimentoNum / totalComprasNum) * 100;
-        }
+        let percentualGeral = totalComprasNum > 0 ? (totalInvestimentoNum / totalComprasNum) * 100 : 0;
 
         document.getElementById('geralQtdCampanhas').textContent = campanhasAtivas.length;
-        document.getElementById('geralPedidos').textContent = totalPedidos;
+        document.getElementById('geralPedidos').textContent = totalPedidos.toLocaleString('pt-BR');
         document.getElementById('geralInvestimento').textContent = formatarMoeda(totalInvestimentoNum);
         document.getElementById('geralCompras').textContent = formatarMoeda(totalComprasNum);
         document.getElementById('geralInvestimentoPercent').textContent = percentualGeral.toFixed(2) + '%';
@@ -474,28 +401,11 @@
         const container = document.getElementById('campaignsContainer');
         container.innerHTML = "";
 
-        if(campanhasFiltradas.length === 0) {
-            container.innerHTML = `<div style="background: white; padding: 20px; border-radius: 12px; text-align: center; color: var(--text-muted);">Nenhuma campanha encontrada com este critério.</div>`;
-            return;
-        }
-
         campanhasFiltradas.forEach(camp => {
-            const valorInvestimentoNum = converterMoedaParaNumero(camp.investimento);
-            const valorComprasNum = converterMoedaParaNumero(camp.compras);
-            
-            // Cálculo do Investimento em % individual (Apenas nos meses)
-            let percentualInvestimentoHtml = "";
-            if (periodoAtual !== "consolidado" && valorComprasNum > 0) {
-                const percentual = (valorInvestimentoNum / valorComprasNum) * 100;
-                percentualInvestimentoHtml = `
-                    <div class="metric-box">
-                        <div>INVESTIMENTO EM %</div>
-                        <div style="color: var(--primary-color);">${percentual.toFixed(2)}%</div>
-                    </div>
-                `;
-            }
+            const vInv = converterMoedaParaNumero(camp.investimento);
+            const vComp = converterMoedaParaNumero(camp.compras);
+            const pctIndiv = vComp > 0 ? (vInv / vComp) * 100 : 0;
 
-            const valorComprasFormatado = formatarMoeda(valorComprasNum);
             const card = document.createElement('div');
             card.className = "campaign-row-card";
             card.innerHTML = `
@@ -503,69 +413,29 @@
                     <div class="camp-name">${camp.name}</div>
                     <div class="camp-desc">${camp.desc}</div>
                 </div>
-                <div class="metric-box">
-                    <div>QTD PEDIDOS</div>
-                    <div>${camp.pedidos}</div>
-                </div>
-                <div class="metric-box">
-                    <div>INVESTIMENTO</div>
-                    <div>${camp.investimento || 'R$ 0,00'}</div>
-                </div>
-                <div class="metric-box">
-                    <div>PAGO PELO CLIENTE</div>
-                    <div style="color: ${camp.corPago};">${camp.pagoCliente || 'R$ 0,00'}</div>
-                </div>
-                <div class="metric-box">
-                    <div>VALOR EM COMPRAS</div>
-                    <div style="color: #065f46;">${valorComprasFormatado}</div>
-                </div>
-                ${percentualInvestimentoHtml}
+                <div class="metric-box"><div>QTD PEDIDOS</div><div>${camp.pedidos}</div></div>
+                <div class="metric-box"><div>INVESTIMENTO</div><div>${camp.investimento}</div></div>
+                <div class="metric-box"><div>PAGO PELO CLIENTE</div><div style="color:${camp.corPago}">${camp.pagoCliente}</div></div>
+                <div class="metric-box"><div>VALOR EM COMPRAS</div><div style="color:#065f46">${formatarMoeda(vComp)}</div></div>
+                <div class="metric-box"><div>INVESTIMENTO EM %</div><div style="color:var(--primary-color)">${pctIndiv.toFixed(2)}%</div></div>
             `;
             container.appendChild(card);
         });
     }
 
     function exportarExcel() {
-        const mesSelect = document.getElementById('mesSelect');
-        const mes = mesSelect.options[mesSelect.selectedIndex].text;
-        const qtdCampanhas = document.getElementById('geralQtdCampanhas').textContent;
-        const totalPedidos = document.getElementById('geralPedidos').textContent;
-        const totalInvestimento = document.getElementById('geralInvestimento').textContent;
-        const totalCompras = document.getElementById('geralCompras').textContent;
-        const totalPercent = document.getElementById('geralInvestimentoPercent').textContent;
-
-        let csvContent = "\uFEFF"; 
-        csvContent += `Relatório de Campanhas de Frete - ${mes}\n`;
-        csvContent += `Quantidade de Campanhas: ${qtdCampanhas} | Investimento Geral em %: ${totalPercent}\n\n`;
-        csvContent += "Campanha;Qtd Pedidos;Investimento;Valor Pago pelo Cliente;Valor em Compras\n";
-
-        let campanhasAtivas = obterCampanhasAtivas();
-        campanhasAtivas.forEach(camp => {
-            csvContent += `"${camp.name}";"${camp.pedidos}";"${camp.investimento || 'R$ 0,00'}";"${camp.pagoCliente || 'R$ 0,00'}";"${formatarMoeda(converterMoedaParaNumero(camp.compras))}"\n`;
+        let csvContent = "\uFEFFCampanha;Pedidos;Investimento;Pago Cliente;Compras\n";
+        obterCampanhasAtivas().forEach(c => {
+            csvContent += `${c.name};${c.pedidos};${c.investimento};${c.pagoCliente};${c.compras}\n`;
         });
-
-        csvContent += `\n"TOTAL GERAL";"${totalPedidos}";"${totalInvestimento}";"-";"${totalCompras}"\n`;
-
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.setAttribute("href", url);
-        link.setAttribute("download", `relatorio_frete_${mes.replace(/[^a-zA-Z0-9]/g, '_')}.csv`);
-        document.body.appendChild(link);
+        link.href = URL.createObjectURL(blob);
+        link.download = `relatorio_frete_2026.csv`;
         link.click();
-        document.body.removeChild(link);
     }
 
-    function salvarDados() {
-        const mesSelect = document.getElementById('mesSelect');
-        const mes = mesSelect.options[mesSelect.selectedIndex].text;
-        alert(`Dados de ${mes} salvos com sucesso!`);
-    }
-
-    window.onload = function() {
-        atualizarFiltros();
-    };
+    window.onload = atualizarFiltros;
 </script>
-
 </body>
 </html>
