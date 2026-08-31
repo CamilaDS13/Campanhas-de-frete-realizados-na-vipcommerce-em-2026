@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Frete - Oficial 2026</title>
-    <!-- Bibliotecas de Suporte -->
+    <title>Painel de Frete - Real Time 2026</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --primary-color: #4f46e5; --bg-color: #f3f4f6; --card-bg: #ffffff;
@@ -80,20 +80,16 @@
 </div>
 
 <script>
-    // LINK DA PLANILHA (O QUE VOCÊ ENVIOU)
     const URL_SHEETS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRzUAT9CqT94eaRqGdvA2UKthhdW8jje2eYLIyy7beRQIT43vbk63fK4Mc1FWWxj6NDGgv3rB-dprBe/pub?output=csv";
 
     let dadosPorMes = {};
-    const nomesMesesLista = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+    const ordemMeses = ["JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"];
 
     async function carregarDados() {
         try {
-            // Adicionado timestamp para evitar cache do navegador
-            const response = await fetch(URL_SHEETS + "&cache=" + new Date().getTime());
-            if (!response.ok) throw new Error("Erro ao acessar planilha.");
-            
+            const response = await fetch(URL_SHEETS + "&t=" + new Date().getTime());
             const csvText = await response.text();
-            const rows = csvText.split('\n').map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+            const rows = parseCSV(csvText);
 
             if (rows.length > 1) {
                 processarPlanilha(rows);
@@ -101,46 +97,38 @@
                 document.getElementById('status-text').innerText = "Sincronizado com Sucesso";
             }
         } catch (err) {
-            document.getElementById('status-text').innerText = "❌ Erro de Conexão. Verifique a publicação.";
-            console.error(err);
+            document.getElementById('status-text').innerText = "❌ Erro de Conexão";
         }
     }
 
-    function limparMoeda(v) {
+    function parseCSV(text) {
+        return text.split('\n').map(line => line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+    }
+
+    function limparNum(v) {
         if (!v) return 0;
         let n = v.toString().replace(/"/g, '').replace(/R\$/g, '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
         return parseFloat(n) || 0;
     }
 
     function processarPlanilha(rows) {
-        // BUSCA AUTOMÁTICA DE COLUNAS (Assim não importa a posição no Excel)
-        const header = rows[0].map(h => h.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
-        const idxData = header.findIndex(h => h.includes("data"));
-        const idxCamp = header.findIndex(h => h.includes("campanha") || h.includes("nome"));
-        const idxPed  = header.findIndex(h => h.includes("pedidos") || h.includes("qtd"));
-        const idxInv  = header.findIndex(h => h.includes("investimento") || h.includes("valor do frete"));
-        const idxPago = header.findIndex(h => h.includes("pago") || h.includes("cliente"));
-        const idxComp = header.findIndex(h => h.includes("compras") || h.includes("valor da nota"));
-
         dadosPorMes = {};
         
+        // Mapeamento baseado no seu print: A:Data, B:Campanha, C:Pedidos, D:Investimento, E:PagoCliente, F:Compras
         rows.slice(1).forEach(row => {
-            if(!row[idxCamp] || !row[idxData]) return;
+            let mesTexto = row[0] ? row[0].replace(/"/g, '').trim().toUpperCase() : "";
+            if(!mesTexto || mesTexto === "" || mesTexto === "DATA") return;
 
-            const dataPartes = row[idxData].replace(/"/g, '').split('/');
-            if(dataPartes.length < 2) return;
-
-            const mesNome = nomesMesesLista[parseInt(dataPartes[1]) - 1];
-            const chaveMes = `${mesNome} / ${dataPartes[2]}`;
+            let chaveMes = mesTexto + " / 2026";
 
             if (!dadosPorMes[chaveMes]) dadosPorMes[chaveMes] = [];
 
             dadosPorMes[chaveMes].push({
-                name: row[idxCamp].replace(/"/g, '').trim().toUpperCase(),
-                pedidos: parseInt(row[idxPed]) || 0,
-                investimento: limparMoeda(row[idxInv]),
-                pagoCliente: limparMoeda(row[idxPago]),
-                compras: limparMoeda(row[idxComp])
+                name: row[1] ? row[1].replace(/"/g, '').trim() : "N/I",
+                pedidos: parseInt(row[2]) || 0,
+                investimento: limparNum(row[3]),
+                pagoCliente: limparNum(row[4]),
+                compras: limparNum(row[5])
             });
         });
 
@@ -150,17 +138,17 @@
 
     function montarMenuMeses() {
         const select = document.getElementById('mesSelect');
-        const meses = Object.keys(dadosPorMes).sort((a,b) => {
-            return nomesMesesLista.indexOf(a.split(' ')[0]) - nomesMesesLista.indexOf(b.split(' ')[0]);
+        const chaves = Object.keys(dadosPorMes).sort((a, b) => {
+            return ordemMeses.indexOf(a.split(' ')[0]) - ordemMeses.indexOf(b.split(' ')[0]);
         });
         
         select.innerHTML = '<option value="consolidado">Consolidado (Total Geral)</option>';
-        meses.forEach(m => {
+        chaves.forEach(m => {
             const opt = document.createElement('option');
             opt.value = m; opt.textContent = m;
             select.appendChild(opt);
         });
-        if(meses.length > 0) select.value = meses[meses.length - 1];
+        if(chaves.length > 0) select.value = chaves[chaves.length - 1];
     }
 
     function atualizarDashboard() {
@@ -169,4 +157,64 @@
         const container = document.getElementById('campaignsContainer');
         container.innerHTML = "";
 
-        let lista = [
+        let lista = [];
+        if (mesSel === "consolidado") {
+            let consolidado = {};
+            Object.values(dadosPorMes).flat().forEach(c => {
+                if (!consolidado[c.name]) consolidado[c.name] = { ...c };
+                else {
+                    consolidado[c.name].pedidos += c.pedidos;
+                    consolidado[c.name].investimento += c.investimento;
+                    consolidado[c.name].pagoCliente += c.pagoCliente;
+                    consolidado[c.name].compras += c.compras;
+                }
+            });
+            lista = Object.values(consolidado);
+        } else {
+            lista = dadosPorMes[mesSel] || [];
+        }
+
+        let filtrados = lista.filter(c => c.name.toLowerCase().includes(busca));
+        let tP = 0, tI = 0, tC = 0;
+
+        filtrados.forEach(c => {
+            tP += c.pedidos; tI += c.investimento; tC += c.compras;
+            const pct = c.compras > 0 ? (c.investimento / c.compras) * 100 : 0;
+
+            container.innerHTML += `
+                <div class="campaign-row-card">
+                    <div><div class="camp-name">${c.name}</div><div style="font-size:11px;color:gray">Campanha Ativa</div></div>
+                    <div class="metric-box"><div>QTD PEDIDOS</div><div>${c.pedidos.toLocaleString('pt-BR')}</div></div>
+                    <div class="metric-box"><div>INVESTIMENTO</div><div>R$ ${c.investimento.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+                    <div class="metric-box"><div>PAGO CLIENTE</div><div>R$ ${c.pagoCliente.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+                    <div class="metric-box"><div>VALOR COMPRAS</div><div>R$ ${c.compras.toLocaleString('pt-BR',{minimumFractionDigits:2})}</div></div>
+                    <div class="metric-box"><div>INVESTIMENTO %</div><div style="color:var(--primary-color)">${pct.toFixed(2)}%</div></div>
+                </div>
+            `;
+        });
+
+        document.getElementById('gCamp').innerText = filtrados.length;
+        document.getElementById('gPed').innerText = tP.toLocaleString('pt-BR');
+        document.getElementById('gInv').innerText = tI.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        document.getElementById('gComp').innerText = tC.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        document.getElementById('gPerc').innerText = (tC > 0 ? (tI/tC)*100 : 0).toFixed(2) + "%";
+    }
+
+    function exportarExcel() {
+        let csv = "\uFEFFCampanha;Pedidos;Investimento;Pago Cliente;Compras;%\n";
+        document.querySelectorAll('.campaign-row-card').forEach(card => {
+            const n = card.querySelector('.camp-name').innerText;
+            const d = Array.from(card.querySelectorAll('.metric-box div:last-child')).map(x => x.innerText);
+            csv += `${n};${d.join(';')}\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "relatorio_frete_2026.csv";
+        link.click();
+    }
+
+    window.onload = carregarDados;
+</script>
+</body>
+</html>
